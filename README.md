@@ -1,6 +1,6 @@
 # TV Show Tracker
 
-I often watch multiple TV shows at the same time—some weekly, some slowly, some paused and resumed months later. Keeping track of where I left off, what I’m actively watching, and what’s finished became harder than it should be. This project is a small web app I built to solve that problem.
+I often watch multiple TV shows at the same time—some weekly, some slowly, some paused and resumed months later. Keeping track of where I left off, what I’m actively watching, and what’s finished became harder than it should be. This project is a small [web app](https://kcandost.github.io/tv-show-tracker/) I built to solve that problem.
 
 The goal was to keep it simple, fast, and private.
 
