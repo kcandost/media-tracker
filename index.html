@@ -9,60 +9,57 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-  <!-- Babel for in-browser JSX (MVP-friendly, not the leanest for perf) -->
+  <!-- Babel (JSX in a single HTML file) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Supabase v2 UMD (must be the UMD build for window.supabase) -->
+  <!-- Supabase v2 UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <style>
-    /* ===== Gruvbox (minimal) ===== */
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.5}
     :root{
-      --bg:#282828;--bg2:#32302f;--bg3:#1d2021;
-      --fg:#ebdbb2;--fg2:#a89984;--bd:#928374;
-      --y:#fabd2f;--b:#83a598;--a:#8ec07c;--g:#b8bb26;--r:#fb4934;
+      --bg:#282828;--bg2:#32302f;--bg3:#1d2021;--fg:#ebdbb2;--fg2:#a89984;--bd:#928374;
+      --red:#fb4934;--green:#b8bb26;--yellow:#fabd2f;--blue:#83a598;--aqua:#8ec07c;
     }
     [data-theme="light"]{
-      --bg:#fbf1c7;--bg2:#f2e5bc;--bg3:#f9f5d7;
-      --fg:#3c3836;--fg2:#665c54;--bd:#7c6f64;
-      --y:#d79921;--b:#458588;--a:#689d6a;--g:#98971a;--r:#cc241d;
+      --bg:#fbf1c7;--bg2:#f2e5bc;--bg3:#f9f5d7;--fg:#3c3836;--fg2:#665c54;--bd:#7c6f64;
+      --red:#cc241d;--green:#98971a;--yellow:#d79921;--blue:#458588;--aqua:#689d6a;
     }
-    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.5}
-    a{color:var(--b);text-decoration:none} a:hover{color:var(--a);text-decoration:underline}
+    body{background:var(--bg);color:var(--fg);transition:background-color .2s,color .2s}
+    a{color:var(--blue);text-decoration:none} a:hover{color:var(--aqua);text-decoration:underline}
     .wrap{max-width:1200px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--bd);padding-bottom:14px;margin-bottom:16px}
-    h1{margin:0;color:var(--y);font-size:1.6rem}
-    .btn{border:0;border-radius:6px;padding:10px 14px;font-weight:650;cursor:pointer;background:var(--b);color:var(--bg);transition:.15s}
-    .btn:hover{background:var(--a);transform:translateY(-1px)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:2px solid var(--bd);padding-bottom:14px;margin-bottom:16px}
+    h1{margin:0;color:var(--yellow);font-size:1.6rem}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .grow{flex:1;min-width:220px}
+    .card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px}
+    .muted{color:var(--fg2)}
+    input,select,textarea{background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:10px;font-size:14px}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)}
+    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--blue);color:var(--bg);transition:.15s}
+    .btn:hover{background:var(--aqua);transform:translateY(-1px)}
     .btn:disabled{background:var(--bd);cursor:not-allowed;transform:none}
     .btn.ghost{background:var(--bg2);color:var(--fg);border:1px solid var(--bd)}
-    .btn.ghost:hover{border-color:var(--y);background:var(--bg3)}
-    .btn.danger{background:var(--r)} .btn.danger:hover{filter:brightness(.95)}
-    input,select{background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px;padding:10px;font-size:14px}
-    input:focus,select:focus{outline:none;border-color:var(--b)}
-    .card{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px}
-    .row{display:flex;gap:10px;align-items:center}
-    .grow{flex:1}
-    .mt{margin-top:12px}
-    .tabs{display:flex;gap:10px;margin:14px 0}
+    .btn.ghost:hover{background:var(--bg3);border-color:var(--yellow)}
+    .btn.danger{background:var(--red)} .btn.danger:hover{filter:brightness(.95)}
+    .tabs{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
     .tab{background:var(--bg2);border:1px solid var(--bd);color:var(--fg)}
-    .tab.active{background:var(--b);color:var(--bg);border-color:var(--b)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-    .sr{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-height:360px;overflow:auto}
-    .sr-item{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;cursor:pointer;transition:.15s}
-    .sr-item:hover{border-color:var(--y);transform:translateY(-2px)}
-    .sr-item img{width:100%;height:240px;object-fit:cover;border-radius:6px;margin-bottom:8px}
-    .meta{color:var(--fg2);font-size:.88rem}
-    .show-h{display:flex;gap:12px}
-    .poster{width:95px;height:135px;object-fit:cover;border-radius:8px}
-    .title{color:var(--y);margin:0 0 4px 0;font-size:1.05rem}
+    .tab.active{background:var(--blue);color:var(--bg);border-color:var(--blue)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+    .sr{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-height:360px;overflow:auto;margin-top:12px}
+    .srItem{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:10px;cursor:pointer;transition:.15s}
+    .srItem:hover{border-color:var(--yellow);transform:translateY(-2px)}
+    .srItem img{width:100%;height:240px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+    .showH{display:flex;gap:12px}
+    .poster{width:95px;height:135px;object-fit:cover;border-radius:10px}
+    .title{margin:0 0 4px 0;color:var(--yellow);font-size:1.05rem}
     .bar{background:var(--bg3);border-radius:999px;height:18px;overflow:hidden;margin:8px 0}
-    .fill{height:100%;background:linear-gradient(90deg,var(--g),var(--a));display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.75rem;font-weight:700}
-    .pill{background:var(--bg3);border-radius:8px;padding:8px;margin-top:8px}
-    .controls input{width:64px;padding:8px}
+    .fill{height:100%;background:linear-gradient(90deg,var(--green),var(--aqua));display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.75rem;font-weight:800}
+    .pill{background:var(--bg3);border-radius:10px;padding:8px;margin-top:8px}
+    .controls input{width:72px;padding:8px}
     .empty{padding:48px 10px;text-align:center;color:var(--fg2)}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:18px}
-    .modal > .card{max-width:520px;width:100%;border:2px solid var(--bd)}
+    .modal .card{max-width:560px;width:100%;border:2px solid var(--bd)}
     label{display:block;margin:10px 0 6px;color:var(--fg2);font-size:.9rem}
     pre.err{margin:0;padding:16px;white-space:pre-wrap;font:14px/1.35 ui-monospace,Menlo,Consolas,monospace}
   </style>
@@ -71,7 +68,7 @@
 <body>
   <div id="root"></div>
 
-  <!-- Show errors instead of a blank page -->
+  <!-- show errors instead of a blank page -->
   <script>
     window.addEventListener("error", (e) => {
       document.body.innerHTML = `<pre class="err">JS Error: ${e.message}\n${e.filename || ""}:${e.lineno || ""}:${e.colno || ""}</pre>`;
@@ -84,12 +81,9 @@
   <script type="text/babel">
     const { useEffect, useMemo, useState } = React;
 
-    // ✅ Your Supabase creds (kept as-is)
-    const SUPABASE_URL = "https://oszjxfffcbxrlwheywzh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zemp4ZmZmY2J4cmx3aGV5d3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MTE3MDYsImV4cCI6MjA4MTQ4NzcwNn0.EF1Wu5ljbnn9uydd89wP0VbZm0da8cvP5CJjjoj9NG0";
-
-    if (!window.supabase) throw new Error("Supabase UMD not loaded (window.supabase missing).");
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ---- LocalStorage keys for per-user setup (keeps your personal Supabase out of the public repo)
+    const LS_URL = "tvtracker_supabase_url";
+    const LS_KEY = "tvtracker_supabase_anon_key";
 
     const TABS = [
       { key: "not-started", label: "Not Started" },
@@ -99,17 +93,42 @@
 
     const pct = (cur, total) => (!total ? 0 : Math.max(0, Math.min(100, Math.round((cur / total) * 100))));
 
-    async function fetchEpisodes(showId) {
+    const redirectTo = window.location.origin + window.location.pathname;
+
+    function makeClient(url, key) {
+      if (!window.supabase) throw new Error("Supabase UMD not loaded (window.supabase missing).");
+      return window.supabase.createClient(url, key);
+    }
+
+    async function tvmazeSearch(q) {
+      const r = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(q)}`);
+      if (!r.ok) throw new Error("TVMaze search failed");
+      return r.json();
+    }
+
+    async function tvmazeEpisodes(showId) {
       const r = await fetch(`https://api.tvmaze.com/shows/${showId}/episodes`);
-      if (!r.ok) throw new Error("TVMaze episodes request failed");
+      if (!r.ok) throw new Error("TVMaze episodes failed");
       return r.json();
     }
 
     function App() {
       const [theme, setTheme] = useState("dark");
-      const [activeTab, setActiveTab] = useState("in-progress");
+
+      // Setup
+      const [sbUrl, setSbUrl] = useState(localStorage.getItem(LS_URL) || "");
+      const [sbKey, setSbKey] = useState(localStorage.getItem(LS_KEY) || "");
+      const hasCreds = !!(sbUrl && sbKey);
+
+      // Supabase client + auth
+      const [supabase, setSupabase] = useState(null);
+      const [session, setSession] = useState(null);
+      const [authLoading, setAuthLoading] = useState(false);
+
+      // Data/UI
+      const [loading, setLoading] = useState(false);
       const [shows, setShows] = useState([]);
-      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState("in-progress");
 
       const [q, setQ] = useState("");
       const [searching, setSearching] = useState(false);
@@ -122,20 +141,51 @@
 
       useEffect(() => document.documentElement.setAttribute("data-theme", theme), [theme]);
 
-      useEffect(() => { (async () => {
-        try {
-          const { data, error } = await db.from("shows").select("*");
-          if (error) throw error;
-          setShows(data || []);
-        } finally {
-          setLoading(false);
-        }
-      })(); }, []);
+      // Initialize Supabase client when creds exist
+      useEffect(() => {
+        if (!hasCreds) { setSupabase(null); setSession(null); return; }
+        setSupabase(makeClient(sbUrl.trim(), sbKey.trim()));
+      }, [hasCreds, sbUrl, sbKey]);
+
+      // Auth session subscription
+      useEffect(() => {
+        if (!supabase) return;
+        let sub;
+
+        (async () => {
+          setAuthLoading(true);
+          const { data } = await supabase.auth.getSession();
+          setSession(data.session ?? null);
+
+          const { data: s } = supabase.auth.onAuthStateChange((_event, newSession) => {
+            setSession(newSession ?? null);
+          });
+          sub = s?.subscription;
+          setAuthLoading(false);
+        })();
+
+        return () => sub?.unsubscribe?.();
+      }, [supabase]);
+
+      // Load shows after login
+      useEffect(() => {
+        if (!supabase || !session) return;
+        (async () => {
+          setLoading(true);
+          try {
+            const { data, error } = await supabase.from("shows").select("*");
+            if (error) throw error;
+            setShows(data || []);
+          } finally {
+            setLoading(false);
+          }
+        })();
+      }, [supabase, session]);
 
       const counts = useMemo(() => ({
         "not-started": shows.filter(s => s.status === "not-started").length,
         "in-progress": shows.filter(s => s.status === "in-progress").length,
-        "completed":   shows.filter(s => s.status === "completed").length,
+        "completed": shows.filter(s => s.status === "completed").length,
       }), [shows]);
 
       const visible = useMemo(() => {
@@ -153,13 +203,45 @@
         return out;
       }, [shows, activeTab, filter, sortBy]);
 
+      async function saveSetup() {
+        const u = sbUrl.trim(), k = sbKey.trim();
+        if (!u || !k) return;
+        localStorage.setItem(LS_URL, u);
+        localStorage.setItem(LS_KEY, k);
+        // re-trigger init via state already; just ensure values are trimmed
+        setSbUrl(u); setSbKey(k);
+      }
+
+      function resetSetup() {
+        localStorage.removeItem(LS_URL);
+        localStorage.removeItem(LS_KEY);
+        setSbUrl(""); setSbKey("");
+        setSupabase(null);
+        setSession(null);
+        setShows([]);
+        setResults([]);
+        setDraft(null);
+      }
+
+      async function signInWithGitHub() {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "github",
+          options: { redirectTo }
+        });
+        if (error) throw error;
+      }
+
+      async function signOut() {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        setShows([]);
+      }
+
       async function doSearch() {
         if (!q.trim()) return;
         setSearching(true);
         try {
-          const r = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(q)}`);
-          if (!r.ok) throw new Error("TVMaze search failed");
-          setResults(await r.json());
+          setResults(await tvmazeSearch(q.trim()));
         } finally {
           setSearching(false);
         }
@@ -168,7 +250,7 @@
       async function pickShow(item) {
         const show = item.show;
         let total = 0;
-        try { total = (await fetchEpisodes(show.id)).length; } catch {}
+        try { total = (await tvmazeEpisodes(show.id)).length; } catch {}
         setDraft({
           tvmaze_id: show.id,
           name: show.name,
@@ -186,37 +268,110 @@
       }
 
       async function saveDraft() {
-        const { data, error } = await db.from("shows").insert([draft]).select();
+        const { data, error } = await supabase.from("shows").insert([draft]).select();
         if (error) throw error;
         setShows(prev => [...prev, data[0]]);
         setDraft(null);
       }
 
       async function updateShow(id, updates) {
-        const { error } = await db.from("shows").update(updates).eq("id", id);
+        const { error } = await supabase.from("shows").update(updates).eq("id", id);
         if (error) throw error;
         setShows(prev => prev.map(s => (s.id === id ? { ...s, ...updates } : s)));
       }
 
       async function removeShow(id) {
         if (!confirm("Delete this show?")) return;
-        const { error } = await db.from("shows").delete().eq("id", id);
+        const { error } = await supabase.from("shows").delete().eq("id", id);
         if (error) throw error;
         setShows(prev => prev.filter(s => s.id !== id));
       }
 
-      if (loading) {
-        return <div className="wrap"><div className="empty">Loading your shows…</div></div>;
+      // ---- Screens
+      if (!hasCreds) {
+        return (
+          <div className="wrap">
+            <Header theme={theme} setTheme={setTheme} right={<button className="btn ghost" onClick={resetSetup}>Reset</button>} />
+            <div className="card">
+              <div style={{fontWeight:900,marginBottom:6}}>Setup (one-time)</div>
+              <div className="muted" style={{marginBottom:12}}>
+                Paste <b>your own</b> Supabase Project URL + anon key. This keeps data private per user.
+              </div>
+
+              <label>Supabase Project URL</label>
+              <input className="grow" value={sbUrl} onChange={(e)=>setSbUrl(e.target.value)} placeholder="https://xxxx.supabase.co" />
+
+              <label>Supabase anon public key</label>
+              <textarea rows="3" value={sbKey} onChange={(e)=>setSbKey(e.target.value)} placeholder="eyJhbGciOi..." />
+
+              <div className="row" style={{justifyContent:"flex-end",marginTop:12}}>
+                <button className="btn ghost" onClick={()=>{ setSbUrl(""); setSbKey(""); }}>Clear</button>
+                <button className="btn" onClick={saveSetup} disabled={!sbUrl.trim() || !sbKey.trim()}>Save</button>
+              </div>
+
+              <div className="muted" style={{marginTop:12,fontSize:13}}>
+                You can reset later (clears localStorage on this device).
+              </div>
+            </div>
+          </div>
+        );
       }
 
+      if (!supabase) {
+        return (
+          <div className="wrap">
+            <Header theme={theme} setTheme={setTheme} right={<button className="btn ghost" onClick={resetSetup}>Reset</button>} />
+            <div className="card">
+              <div style={{fontWeight:900,marginBottom:6}}>Supabase not initialized</div>
+              <div className="muted">Your saved credentials may be invalid. Click Reset and enter them again.</div>
+            </div>
+          </div>
+        );
+      }
+
+      if (authLoading) {
+        return (
+          <div className="wrap">
+            <Header theme={theme} setTheme={setTheme} right={<button className="btn ghost" onClick={resetSetup}>Reset</button>} />
+            <div className="empty">Checking login…</div>
+          </div>
+        );
+      }
+
+      if (!session) {
+        return (
+          <div className="wrap">
+            <Header
+              theme={theme}
+              setTheme={setTheme}
+              right={<div className="row">
+                <button className="btn ghost" onClick={resetSetup}>Change Supabase</button>
+              </div>}
+            />
+            <div className="card">
+              <div style={{fontWeight:900,marginBottom:6}}>Sign in</div>
+              <div className="muted" style={{marginBottom:12}}>
+                Sign in with GitHub to access your private shows (RLS owner-only).
+              </div>
+              <button className="btn" onClick={signInWithGitHub}>Sign in with GitHub</button>
+            </div>
+          </div>
+        );
+      }
+
+      // ---- Main app (logged in)
       return (
         <div className="wrap">
-          <header>
-            <h1>📺 TV Show Tracker</h1>
-            <button className="btn ghost" onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}>
-              {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
-            </button>
-          </header>
+          <Header
+            theme={theme}
+            setTheme={setTheme}
+            right={
+              <div className="row">
+                <button className="btn ghost" onClick={resetSetup}>Change Supabase</button>
+                <button className="btn ghost" onClick={signOut}>Sign out</button>
+              </div>
+            }
+          />
 
           <div className="card">
             <div className="row">
@@ -224,8 +379,8 @@
                 className="grow"
                 placeholder="Search TVMaze…"
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && doSearch()}
+                onChange={(e)=>setQ(e.target.value)}
+                onKeyDown={(e)=>e.key==="Enter" && doSearch()}
               />
               <button className="btn" onClick={doSearch} disabled={searching}>
                 {searching ? "Searching…" : "Search"}
@@ -233,15 +388,15 @@
             </div>
 
             {results.length > 0 && (
-              <div className="sr mt">
+              <div className="sr">
                 {results.map(r => (
-                  <div key={r.show.id} className="sr-item" onClick={() => pickShow(r)}>
+                  <div key={r.show.id} className="srItem" onClick={()=>pickShow(r)}>
                     <img
                       src={r.show.image?.medium || r.show.image?.original || "https://via.placeholder.com/200x280?text=No+Image"}
                       alt={r.show.name}
                     />
-                    <div style={{fontWeight:700}}>{r.show.name}</div>
-                    <div className="meta">{r.show.premiered?.slice(0,4) || ""}</div>
+                    <div style={{fontWeight:800}}>{r.show.name}</div>
+                    <div className="muted" style={{fontSize:13}}>{r.show.premiered?.slice(0,4) || ""}</div>
                   </div>
                 ))}
               </div>
@@ -252,15 +407,15 @@
             {TABS.map(t => (
               <button
                 key={t.key}
-                className={`btn tab ${activeTab === t.key ? "active" : ""}`}
-                onClick={() => setActiveTab(t.key)}
+                className={`btn tab ${activeTab===t.key ? "active" : ""}`}
+                onClick={()=>setActiveTab(t.key)}
               >
                 {t.label} ({counts[t.key]})
               </button>
             ))}
           </div>
 
-          <div className="row mt">
+          <div className="row">
             <input className="grow" placeholder="Filter shows…" value={filter} onChange={(e)=>setFilter(e.target.value)} />
             <select value={sortBy} onChange={(e)=>setSortBy(e.target.value)}>
               <option value="name">Sort: Name</option>
@@ -269,33 +424,39 @@
             </select>
           </div>
 
-          {visible.length === 0 ? (
+          {loading ? (
+            <div className="empty">Loading your shows…</div>
+          ) : visible.length === 0 ? (
             <div className="empty">
-              <div style={{color:"var(--y)",fontWeight:800,fontSize:"1.1rem"}}>No shows here yet</div>
-              <div className="meta">Search above and add a show to get started.</div>
+              <div style={{color:"var(--yellow)",fontWeight:900,fontSize:"1.1rem"}}>No shows here yet</div>
+              <div className="muted">Search above and add a show to get started.</div>
             </div>
           ) : (
-            <div className="grid mt">
+            <div className="grid">
               {visible.map(s => (
-                <ShowCard
-                  key={s.id}
-                  show={s}
-                  onUpdate={updateShow}
-                  onDelete={removeShow}
-                />
+                <ShowCard key={s.id} show={s} onUpdate={updateShow} onDelete={removeShow} />
               ))}
             </div>
           )}
 
           {draft && (
-            <AddModal
-              show={draft}
-              onClose={()=>setDraft(null)}
-              onChange={setDraft}
-              onSave={saveDraft}
-            />
+            <AddModal show={draft} onClose={()=>setDraft(null)} onChange={setDraft} onSave={saveDraft} />
           )}
         </div>
+      );
+    }
+
+    function Header({ theme, setTheme, right }) {
+      return (
+        <header>
+          <h1>📺 TV Show Tracker</h1>
+          <div className="row">
+            <button className="btn ghost" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+              {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+            </button>
+            {right}
+          </div>
+        </header>
       );
     }
 
@@ -308,7 +469,7 @@
         let cancelled = false;
         (async () => {
           try {
-            const eps = await fetchEpisodes(show.tvmaze_id);
+            const eps = await tvmazeEpisodes(show.tvmaze_id);
             const n = eps.find(x => x.season > show.current_season || (x.season === show.current_season && x.number > show.current_episode)) || null;
             if (!cancelled) setNext(n);
           } catch {
@@ -322,48 +483,56 @@
       const left = Math.max(0, (show.total_episodes || 0) - (show.current_episode || 0));
 
       async function applyProgress() {
-        // MVP approximation: map (season,episode) -> episode count using 20 eps/season.
-        const approxWatched = (ep || 0) + (Math.max(1, season) - 1) * 20;
+        // MVP approximation: map (season,episode) -> watched count using 20 eps/season
+        const s = Math.max(1, season || 1);
+        const e = Math.max(0, ep || 0);
+        const approxWatched = e + (s - 1) * 20;
+
         let status = show.status;
         if (approxWatched >= (show.total_episodes || 0)) status = "completed";
         else if (approxWatched > 0) status = "in-progress";
-        await onUpdate(show.id, { current_season: Math.max(1, season), current_episode: Math.max(0, ep), status });
+
+        await onUpdate(show.id, { current_season: s, current_episode: e, status });
       }
 
       return (
         <div className="card">
-          <div className="show-h">
+          <div className="showH">
             <img className="poster" src={show.image_url || "https://via.placeholder.com/100x140?text=No+Image"} alt={show.name} />
             <div className="grow">
               <h3 className="title">{show.name}</h3>
-              <div className="meta">
+              <div className="muted" style={{fontSize:13}}>
                 {show.genres ? <div>🎭 {show.genres}</div> : null}
                 {show.premiered ? <div>📅 {show.premiered}</div> : null}
               </div>
               {show.source ? (
-                <a className="meta" href={show.source} target="_blank" rel="noopener noreferrer">🔗 Watch Source</a>
+                <a className="muted" style={{fontSize:13}} href={show.source} target="_blank" rel="noopener noreferrer">🔗 Watch Source</a>
               ) : null}
             </div>
           </div>
 
-          <div className="meta mt">S{show.current_season} E{show.current_episode} • {show.total_episodes || 0} eps</div>
+          <div className="muted" style={{marginTop:10,fontSize:13}}>
+            S{show.current_season} E{show.current_episode} • {show.total_episodes || 0} eps
+          </div>
 
           <div className="bar">
             <div className="fill" style={{ width: `${progress}%` }}>{progress >= 12 ? `${progress}%` : ""}</div>
           </div>
 
-          <div className="meta">{left ? `${left} episodes left` : "All caught up!"}</div>
+          <div className="muted" style={{fontSize:13}}>
+            {left ? `${left} episodes left` : "All caught up!"}
+          </div>
 
           {next && (
-            <div className="pill meta">
-              <b style={{color:"var(--y)"}}>Next:</b> S{next.season} E{next.number} — {next.name}{next.airdate ? ` (${next.airdate})` : ""}
+            <div className="pill muted" style={{fontSize:13}}>
+              <b style={{color:"var(--yellow)"}}>Next:</b> S{next.season} E{next.number} — {next.name}{next.airdate ? ` (${next.airdate})` : ""}
             </div>
           )}
 
-          <div className="row controls mt">
-            <span className="meta">S</span>
+          <div className="row controls" style={{marginTop:12}}>
+            <span className="muted" style={{fontSize:13}}>S</span>
             <input type="number" min="1" value={season} onChange={(e)=>setSeason(parseInt(e.target.value)||1)} />
-            <span className="meta">E</span>
+            <span className="muted" style={{fontSize:13}}>E</span>
             <input type="number" min="0" value={ep} onChange={(e)=>setEp(parseInt(e.target.value)||0)} />
             <button className="btn" style={{padding:"8px 12px"}} onClick={applyProgress}>Update</button>
             <button className="btn danger" style={{padding:"8px 12px"}} onClick={()=>onDelete(show.id)}>Delete</button>
@@ -376,12 +545,12 @@
       return (
         <div className="modal" onClick={onClose}>
           <div className="card" onClick={(e)=>e.stopPropagation()}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:10}}>
+            <div className="row" style={{justifyContent:"space-between",alignItems:"flex-start"}}>
               <div>
-                <div style={{color:"var(--y)",fontWeight:900,fontSize:"1.15rem"}}>Add: {show.name}</div>
-                <div className="meta">Total Episodes: {show.total_episodes || 0}</div>
+                <div style={{color:"var(--yellow)",fontWeight:900,fontSize:"1.15rem"}}>Add: {show.name}</div>
+                <div className="muted" style={{fontSize:13}}>Total Episodes: {show.total_episodes || 0}</div>
               </div>
-              <button className="btn ghost" onClick={onClose} style={{padding:"8px 12px"}}>✕</button>
+              <button className="btn ghost" style={{padding:"8px 12px"}} onClick={onClose}>✕</button>
             </div>
 
             <label>Starting Season</label>
@@ -403,7 +572,7 @@
               <option value="completed">Completed</option>
             </select>
 
-            <div className="row mt" style={{justifyContent:"flex-end"}}>
+            <div className="row" style={{justifyContent:"flex-end",marginTop:12}}>
               <button className="btn ghost" onClick={onClose}>Cancel</button>
               <button className="btn" onClick={onSave}>Add Show</button>
             </div>
@@ -412,7 +581,7 @@
       );
     }
 
-    // ✅ FIXED: React 18 uses ReactDOM.createRoot (NOT ReactDOMClient)
+    // ✅ Correct React 18 mount (no ReactDOMClient)
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<App />);
   </script>
