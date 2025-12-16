@@ -86,11 +86,4 @@ This is intentionally a focused tracker, not a full media management system.
 
 ---
 
-## Why this exists
 
-This project is intentionally small and practical. It focuses on shipping something useful, keeping the architecture understandable, and handling user data responsibly. It’s both a personal tool and a reusable template.
-
-If you’d like, I can:
-- make UI more user-friendly
-- add a technical decisions section  
-- or help document the Supabase setup more explicitly
