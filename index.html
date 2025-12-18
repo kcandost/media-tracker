@@ -571,84 +571,173 @@
     }
 
     function ShowCard({ show, onUpdate, onDelete }) {
-      const [next, setNext] = useState(null);
-      const [season, setSeason] = useState(show.current_season);
-      const [ep, setEp] = useState(show.current_episode);
+  const [eps, setEps] = useState(null);
+  const [season, setSeason] = useState(show.current_season);
+  const [ep, setEp] = useState(show.current_episode);
 
-      useEffect(() => {
-        let cancelled = false;
-        (async () => {
-          try {
-            const eps = await tvmazeEpisodes(show.tvmaze_id);
-            const n = eps.find(x => x.season > show.current_season || (x.season === show.current_season && x.number > show.current_episode)) || null;
-            if (!cancelled) setNext(n);
-          } catch {
-            if (!cancelled) setNext(null);
-          }
-        })();
-        return () => { cancelled = true; };
-      }, [show.tvmaze_id, show.current_season, show.current_episode]);
+  // Parse airdate as local midnight to avoid timezone off-by-one
+  const parseAirDate = (s) => (s ? new Date(`${s}T00:00:00`) : null);
 
-      const progress = pct(show.current_episode, show.total_episodes);
-      const left = Math.max(0, (show.total_episodes || 0) - (show.current_episode || 0));
-
-      async function applyProgress() {
-        const s = Math.max(1, season || 1);
-        const e = Math.max(0, ep || 0);
-        const approxWatched = e + (s - 1) * 20;
-
-        let status = show.status;
-        if (approxWatched >= (show.total_episodes || 0)) status = "completed";
-        else if (approxWatched > 0) status = "in-progress";
-
-        await onUpdate(show.id, { current_season: s, current_episode: e, status });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await tvmazeEpisodes(show.tvmaze_id);
+        if (!cancelled) setEps(Array.isArray(list) ? list : []);
+      } catch {
+        if (!cancelled) setEps([]);
       }
+    })();
+    return () => { cancelled = true; };
+  }, [show.tvmaze_id]);
 
-      return (
-        <div className="card">
-          <div className="showH">
-            <img className="poster" src={show.image_url || "https://via.placeholder.com/100x140?text=No+Image"} alt={show.name} />
-            <div className="grow">
-              <h3 className="title">{show.name}</h3>
-              <div className="muted" style={{fontSize:13}}>
-                {show.genres ? <div>{show.genres}</div> : null}
-                {show.premiered ? <div>{show.premiered}</div> : null}
+  const progress = pct(show.current_episode, show.total_episodes);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const computed = useMemo(() => {
+    if (!eps) return null;
+
+    const withDate = eps.filter(e => e.airdate);
+    const aired = withDate.filter(e => parseAirDate(e.airdate) <= today);
+    const unaired = withDate
+      .filter(e => parseAirDate(e.airdate) > today)
+      .sort((a, b) => parseAirDate(a.airdate) - parseAirDate(b.airdate));
+
+    // "Watched" means all episodes up to (season, episode) in order
+    const watched = eps.filter(e =>
+      (e.season < show.current_season) ||
+      (e.season === show.current_season && e.number <= show.current_episode)
+    );
+
+    const watchedAiredCount = watched.filter(e => e.airdate && parseAirDate(e.airdate) <= today).length;
+    const remainingAiredCount = Math.max(0, aired.length - watchedAiredCount);
+
+    const seasonsCount = eps.reduce((m, e) => Math.max(m, e.season || 0), 0) || 0;
+    const totalEpisodes = eps.length || (show.total_episodes || 0);
+
+    // Date rule:
+    // - If there exists an unaired episode: show the first unaired episode date
+    // - Else: show the last aired episode date (if any)
+    const dateEpisode = (unaired[0] || aired.sort((a, b) => parseAirDate(a.airdate) - parseAirDate(b.airdate)).slice(-1)[0] || null);
+
+    // Optional: still show "Next" line (but now driven by the first unaired)
+    const next = unaired[0] || null;
+
+    return {
+      seasonsCount,
+      totalEpisodes,
+      remainingAiredCount,
+      dateEpisode,
+      next,
+    };
+  }, [eps, show.current_season, show.current_episode, show.total_episodes, today]);
+
+  async function applyProgress() {
+    const s = Math.max(1, season || 1);
+    const e = Math.max(0, ep || 0);
+    const approxWatched = e + (s - 1) * 20;
+
+    let status = show.status;
+    if (approxWatched >= (show.total_episodes || 0)) status = "completed";
+    else if (approxWatched > 0) status = "in-progress";
+
+    await onUpdate(show.id, { current_season: s, current_episode: e, status });
+  }
+
+  const seasonsLabel =
+    computed?.seasonsCount
+      ? `${computed.seasonsCount} ${computed.seasonsCount === 1 ? "Season" : "Seasons"}`
+      : null;
+
+  const episodesLabel =
+    (computed?.totalEpisodes ?? show.total_episodes ?? 0) +
+    ` ${(computed?.totalEpisodes ?? show.total_episodes ?? 0) === 1 ? "episode" : "episodes"}`;
+
+  return (
+    <div className="card">
+      <div className="showH">
+        <img
+          className="poster"
+          src={show.image_url || "https://via.placeholder.com/100x140?text=No+Image"}
+          alt={show.name}
+        />
+        <div className="grow">
+          <h3 className="title">{show.name}</h3>
+
+          <div className="muted" style={{ fontSize: 13 }}>
+            {(seasonsLabel || episodesLabel) ? (
+              <div>
+                {seasonsLabel ? seasonsLabel : "—"} • {episodesLabel}
               </div>
-              {show.source ? (
-                <a className="muted" style={{fontSize:13}} href={show.source} target="_blank" rel="noopener noreferrer">Watch source</a>
-              ) : null}
-            </div>
+            ) : null}
           </div>
 
-          <div className="muted" style={{marginTop:10,fontSize:13}}>
-            S{show.current_season} E{show.current_episode} • {show.total_episodes || 0} eps
-          </div>
-
-          <div className="bar">
-            <div className="fill" style={{ width: `${progress}%` }}>{progress >= 12 ? `${progress}%` : ""}</div>
-          </div>
-
-          <div className="muted" style={{fontSize:13}}>
-            {left ? `${left} episodes left` : "All caught up!"}
-          </div>
-
-          {next && (
-            <div className="pill muted" style={{fontSize:13}}>
-              <b style={{color:"var(--yellow)"}}>Next:</b> S{next.season} E{next.number} — {next.name}{next.airdate ? ` (${next.airdate})` : ""}
-            </div>
-          )}
-
-          <div className="row controls" style={{marginTop:12}}>
-            <span className="muted" style={{fontSize:13}}>S</span>
-            <input type="number" min="1" value={season} onChange={(e)=>setSeason(parseInt(e.target.value)||1)} />
-            <span className="muted" style={{fontSize:13}}>E</span>
-            <input type="number" min="0" value={ep} onChange={(e)=>setEp(parseInt(e.target.value)||0)} />
-            <button className="btn" style={{padding:"8px 12px"}} onClick={applyProgress}>Update</button>
-            <button className="btn danger" style={{padding:"8px 12px"}} onClick={()=>onDelete(show.id)}>Delete</button>
-          </div>
+          {show.source ? (
+            <a
+              className="muted"
+              style={{ fontSize: 13 }}
+              href={show.source}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Watch source
+            </a>
+          ) : null}
         </div>
-      );
-    }
+      </div>
+
+      <div className="muted" style={{ marginTop: 10, fontSize: 13 }}>
+        S{show.current_season} E{show.current_episode} • {show.total_episodes || 0} eps
+      </div>
+
+      <div className="bar">
+        <div className="fill" style={{ width: `${progress}%` }}>
+          {`${progress}%`}
+        </div>
+      </div>
+
+      <div className="muted" style={{ fontSize: 13 }}>
+        {computed ? (
+          computed.remainingAiredCount
+            ? `${computed.remainingAiredCount} aired episodes left`
+            : "All caught up (on aired episodes)!"
+        ) : (
+          "…"
+        )}
+      </div>
+
+      {computed?.dateEpisode?.airdate ? (
+        <div className="pill muted" style={{ fontSize: 13 }}>
+          <b style={{ color: "var(--yellow)" }}>Relevant date:</b>{" "}
+          {computed.dateEpisode.airdate}
+        </div>
+      ) : null}
+
+      {computed?.next ? (
+        <div className="pill muted" style={{ fontSize: 13 }}>
+          <b style={{ color: "var(--yellow)" }}>First unaired:</b>{" "}
+          S{computed.next.season} E{computed.next.number} — {computed.next.name}{" "}
+          {computed.next.airdate ? `(${computed.next.airdate})` : ""}
+        </div>
+      ) : null}
+
+      <div className="row controls" style={{ marginTop: 12 }}>
+        <span className="muted" style={{ fontSize: 13 }}>S</span>
+        <input type="number" min="1" value={season} onChange={(e) => setSeason(parseInt(e.target.value) || 1)} />
+        <span className="muted" style={{ fontSize: 13 }}>E</span>
+        <input type="number" min="0" value={ep} onChange={(e) => setEp(parseInt(e.target.value) || 0)} />
+        <button className="btn" style={{ padding: "8px 12px" }} onClick={applyProgress}>Update</button>
+        <button className="btn danger" style={{ padding: "8px 12px" }} onClick={() => onDelete(show.id)}>Delete</button>
+      </div>
+    </div>
+  );
+}
+
 
     function AddModal({ show, onClose, onChange, onSave }) {
       return (
